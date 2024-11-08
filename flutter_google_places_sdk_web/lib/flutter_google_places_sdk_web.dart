@@ -3,9 +3,9 @@ library places;
 
 import 'dart:async';
 import 'dart:developer';
-import 'dart:html' as html;
 import 'dart:js_interop';
 import 'dart:js_util';
+import 'package:web/web.dart' as web;
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -96,7 +96,8 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
 
   void _doInit() {
     _svcAutoComplete = AutocompleteService();
-    _svcPlaces = PlacesService(html.window.document.createElement('div') as web.HTMLElement);
+    _svcPlaces = PlacesService(
+        web.window.document.createElement('div') as web.HTMLElement);
     _completer!.complete();
   }
 
@@ -124,15 +125,16 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
       ..input = query
       ..origin = origin == null ? null : core.LatLng(origin.lat, origin.lng)
       ..types = placeTypesFilter.isEmpty ? null : placeTypesFilter
-      ..componentRestrictions = (ComponentRestrictions()..country = countries?.jsify())
+      ..componentRestrictions =
+          (ComponentRestrictions()..country = countries?.jsify())
       ..bounds = _boundsToWeb(locationBias)
       ..language = _language);
     final resp = await prom;
 
     final predictions = resp.predictions
-            .whereNotNull()
-            .map(_translatePrediction)
-            .toList(growable: false);
+        .whereNotNull()
+        .map(_translatePrediction)
+        .toList(growable: false);
     return FindAutocompletePredictionsResponse(predictions);
   }
 
@@ -277,10 +279,10 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
       name: addressComponent.longName,
       shortName: addressComponent.shortName,
       types: addressComponent.types
-              .whereNotNull()
-              .map((e) => e.toString())
-              .cast<String>()
-              .toList(growable: false),
+          .whereNotNull()
+          .map((e) => e.toString())
+          .cast<String>()
+          .toList(growable: false),
     );
   }
 
