@@ -4,7 +4,6 @@ library places;
 import 'dart:async';
 import 'dart:developer';
 import 'dart:js_interop';
-import 'dart:js_util';
 import 'package:web/web.dart' as web;
 
 import 'package:collection/collection.dart';
@@ -18,7 +17,6 @@ import 'package:google_maps/google_maps.dart' as core;
 import 'package:google_maps/google_maps_geocoding.dart' as geocoding;
 import 'package:google_maps/google_maps_places.dart' as places;
 import 'package:google_maps/google_maps_places.dart';
-import 'package:web/web.dart' as web;
 
 @JS('initMap')
 external set _initMap(JSFunction f);
@@ -232,8 +230,7 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
           ?.map(_parseAddressComponent)
           .cast<inter.AddressComponent>()
           .toList(growable: false),
-      businessStatus:
-          _parseBusinessStatus(getProperty(place, 'business_status')),
+      businessStatus: _parseBusinessStatus(place.businessStatus?.toString()),
       attributions: place.htmlAttributions?.cast<String>(),
       latLng: _parseLatLang(place.geometry?.location),
       name: place.name,
