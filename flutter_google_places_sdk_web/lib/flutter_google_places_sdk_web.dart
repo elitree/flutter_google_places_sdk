@@ -3,8 +3,9 @@ library places;
 
 import 'dart:async';
 import 'dart:developer';
-import 'dart:html' as html;
+// import 'dart:html' as html;
 import 'dart:js_util';
+import 'package:web/web.dart' as web;
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -61,23 +62,27 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
 
     _initMap = allowInterop(_doInit);
 
-    html.Element? scriptExist =
-        html.window.document.querySelector('#$_SCRIPT_ID');
-    if (scriptExist != null) {
-      _doInit();
-    } else {
-      final body = html.window.document.querySelector('body')!;
-      var src =
-          'https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=places&callback=initMap';
-      if (locale?.languageCode != null) {
-        _language = locale?.languageCode;
-      }
-      body.append(html.ScriptElement()
-        ..id = _SCRIPT_ID
-        ..src = src
-        ..async = true
-        ..type = 'application/javascript');
-    }
+    // SDK has conflicts with Google Maps Flutter; see
+    // https://github.com/matanshukry/flutter_google_places_sdk/issues/93
+    _doInit();
+
+    // html.Element? scriptExist =
+    //     html.window.document.querySelector('#$_SCRIPT_ID');
+    // if (scriptExist != null) {
+    //   _doInit();
+    // } else {
+    //   final body = html.window.document.querySelector('body')!;
+    //   var src =
+    //       'https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=places&callback=initMap';
+    //   if (locale?.languageCode != null) {
+    //     _language = locale?.languageCode;
+    //   }
+    //   body.append(html.ScriptElement()
+    //     ..id = _SCRIPT_ID
+    //     ..src = src
+    //     ..async = true
+    //     ..type = 'application/javascript');
+    // }
 
     return completer.future.then((_) {});
   }
@@ -91,7 +96,9 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
 
   void _doInit() {
     _svcAutoComplete = AutocompleteService();
-    _svcPlaces = PlacesService(html.window.document.createElement('div'));
+    // _svcPlaces = PlacesService(html.window.document.createElement('div'));
+    _svcPlaces = PlacesService(
+        web.window.document.createElement('div') as web.HTMLElement);
     _completer!.complete();
   }
 
@@ -119,7 +126,9 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
       ..input = query
       ..origin = origin == null ? null : core.LatLng(origin.lat, origin.lng)
       ..types = placeTypesFilter.isEmpty ? null : placeTypesFilter
-      ..componentRestrictions = (ComponentRestrictions()..country = countries)
+      // ..componentRestrictions = (ComponentRestrictions()..country = countries)
+      ..componentRestrictions =
+          (ComponentRestrictions()..country = countries?.jsify())
       ..bounds = _boundsToWeb(locationBias)
       ..language = _language);
     final resp = await prom;
@@ -226,8 +235,9 @@ class FlutterGooglePlacesSdkWebPlugin extends FlutterGooglePlacesSdkPlatform {
           ?.map(_parseAddressComponent)
           .cast<AddressComponent>()
           .toList(growable: false),
-      businessStatus:
-          _parseBusinessStatus(getProperty(place, 'business_status')),
+      // businessStatus:
+      // _parseBusinessStatus(getProperty(place, 'business_status')),
+      businessStatus: _parseBusinessStatus(place.businessStatus?.toString()),
       attributions: place.htmlAttributions?.cast<String>(),
       latLng: _parseLatLang(place.geometry?.location),
       name: place.name,
